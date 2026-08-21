@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>TD Career Track Automation</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+<div class="shell">
+  <aside class="rail">
+    <div class="brand"><div class="shield">TD</div><div><strong>Career Track</strong><span>Automation</span></div></div>
+    <nav id="steps">
+      <button class="step active" data-step="1"><b>1</b><span>Choose executives</span></button>
+      <button class="step" data-step="2"><b>2</b><span>Review names</span></button>
+      <button class="step" data-step="3"><b>3</b><span>Run Copilot</span></button>
+      <button class="step" data-step="4"><b>4</b><span>Build packages</span></button>
+      <button class="step" data-step="5"><b>5</b><span>Save results</span></button>
+    </nav>
+    <div class="rail-note"><span class="dot"></span><span id="railStatus">Ready</span></div>
+  </aside>
+
+  <main>
+    <header><div><p class="eyebrow">CAREER TRACK WORKFLOW</p><h1 id="pageTitle">Choose executives</h1><p id="pageSub">Paste a list, upload a CSV, or select names from Excel.</p></div><button class="ghost" id="helpBtn">Name format help</button></header>
+
+    <section class="view active" id="view1">
+      <div class="cards input-tabs">
+        <button class="input-tab active" data-mode="paste"><span>⌨</span><b>Paste names</b><small>One executive per line</small></button>
+        <button class="input-tab" data-mode="csv"><span>CSV</span><b>Upload CSV</b><small>A file containing names</small></button>
+        <button class="input-tab" data-mode="excel"><span>XLS</span><b>Choose from Excel</b><small>Filter a worksheet</small></button>
+      </div>
+
+      <div class="panel" id="pastePanel">
+        <div class="panel-head"><div><h2>Executive names</h2><p>Enter one name per line. Names stay exactly as entered. Select a name and right-click for special formatting.</p></div><button class="ghost" id="customNameBtn">+ Special name</button><span class="count" id="nameCount">0 names</span></div>
+        <textarea id="nameBox" spellcheck="false" placeholder="Johnathan &quot;John&quot; Doe&#10;Mary-Ann O'Brien&#10;Étienne Dupont"></textarea>
+      </div>
+
+      <div class="panel hidden" id="csvPanel">
+        <div class="dropzone"><div class="file-icon">CSV</div><h2>Select a CSV file</h2><p>Use a one-column file, or choose the name column after loading.</p><button class="primary" id="chooseCsv">Choose CSV</button><p class="file-path" id="csvPath"></p></div>
+        <div id="csvColumnWrap" class="hidden field-row"><label>Name column<select id="csvColumn"></select></label><button class="secondary" id="loadCsv">Load names</button></div>
+      </div>
+
+      <div class="panel hidden" id="excelPanel">
+        <div class="dropzone" id="excelEmpty"><div class="file-icon">XLS</div><h2>Select an Excel workbook</h2><p>Pick a worksheet, preview rows, then apply column filters.</p><button class="primary" id="chooseExcel">Choose workbook</button><p class="file-path" id="excelPath"></p></div>
+        <div id="excelLoaded" class="hidden">
+          <div class="field-row"><label>Worksheet<select id="sheetSelect"></select></label><label>Name column<select id="nameColumn"></select></label><button class="secondary" id="addFilter">Add filter</button><button class="primary" id="useFiltered">Use filtered names</button></div>
+          <div id="filters"></div>
+          <div class="grid-wrap"><table id="excelGrid"><thead></thead><tbody></tbody></table></div>
+          <p class="muted" id="rowSummary"></p>
+        </div>
+      </div>
+
+      <div class="panel compact">
+        <div><h2>Name order</h2><p>This controls the examples and expected input format. It does not rewrite names.</p></div>
+        <div class="segmented" id="nameOrder"><button class="active" data-order="first">Firstname Lastname</button><button data-order="last">Lastname, Firstname</button></div>
+      </div>
+      <footer><span></span><button class="primary next" id="toReview">Review names <span>→</span></button></footer>
+    </section>
+
+    <section class="view" id="view2">
+      <div id="validationSummary"></div>
+      <div class="panel"><div class="panel-head"><div><h2>Names ready for submission</h2><p>Review the exact values that will be sent to Career Track File Locator.</p></div><span class="count" id="reviewCount"></span></div><div class="name-list" id="reviewNames"></div></div>
+      <div class="panel compact"><div><h2>Output location</h2><p>Default: “Timestamped Copilot Outputs” beside the application.</p><span class="file-path" id="outputPath">Default location</span></div><button class="secondary" id="chooseOutput">Choose another folder</button></div>
+      <footer><button class="secondary back" data-back="1">← Back</button><button class="primary" id="startRun">Start automation</button></footer>
+    </section>
+
+    <section class="view" id="view3">
+      <div class="hero-status"><div class="pulse" id="pulse"></div><div><p class="eyebrow">LIVE STATUS</p><h2 id="runStatus">Starting Microsoft Edge</h2><p id="runDetail">The browser will remain minimized unless sign-in needs attention.</p></div></div>
+      <div class="timeline" id="timeline">
+        <div data-state="browser"><b>1</b><span><strong>Open and authenticate</strong><small>Microsoft Edge and Copilot Agent Store</small></span></div>
+        <div data-state="locator"><b>2</b><span><strong>Locate source files</strong><small>Career Track File Locator</small></span></div>
+        <div data-state="reader"><b>3</b><span><strong>Read source package</strong><small>Career Track Source Reader</small></span></div>
+        <div data-state="handoff"><b>4</b><span><strong>Prepare package handoff</strong><small>JSON input for the local generator</small></span></div>
+      </div>
+      <div class="alert warning hidden" id="loginAlert"><h3>Sign-in needs your attention</h3><p>Complete Microsoft sign-in in Edge. When you are at the Your Agents page, return here and confirm.</p><div class="button-row"><button class="primary" id="confirmLogin">I’m signed in and at My Agents</button></div></div>
+      <div class="alert error hidden" id="loginFailed"><h3>Copilot page not verified</h3><p>Edge is not currently at the Agent Store with both required agents visible.</p><div class="button-row"><button class="secondary" id="restartLogin">Restart browser stage</button><button class="primary" id="manualLogin">I’ll navigate there manually</button></div></div>
+      <div class="alert error hidden" id="runError"><h3>Automation stopped</h3><p id="runErrorText"></p><div class="button-row"><button class="secondary" id="retryRun">Return to names</button></div></div>
+    </section>
+
+    <section class="view" id="view4">
+      <div class="hero-status"><div class="device-icon">{ }</div><div><p class="eyebrow">PACKAGE GENERATOR</p><h2>Copilot handoff is ready</h2><p>The second agent JSON has been written for the local package generator.</p></div></div>
+      <div class="panel"><h2>Waiting for completed packages</h2><p>The existing generator should read <code>device_handoff/input/job.json</code> and write finished packages to <code>device_handoff/output/completed_packages</code>.</p><div class="path-box" id="runPath"></div><div class="loader-line"><i></i></div><p class="muted" id="deviceStatus">Watching the output folder…</p></div>
+    </section>
+
+    <section class="view" id="view5">
+      <div class="success-mark">✓</div><h2 class="center">Packages are ready</h2><p class="center muted">Review the completed files, then choose where to save copies.</p>
+      <div class="panel"><div class="panel-head"><div><h2>Completed packages</h2><p id="packageCount"></p></div><button class="secondary" id="refreshPackages">Refresh</button></div><div class="package-list" id="packageList"></div></div>
+      <div class="panel compact"><div><h2>Save destination</h2><p class="file-path" id="exportPath">No folder selected</p></div><button class="secondary" id="chooseExport">Choose folder</button></div>
+      <footer><button class="secondary" id="newRun">Start a new run</button><button class="primary" id="exportBtn" disabled>Save completed packages</button></footer>
+      <div class="toast hidden" id="toast"></div>
+    </section>
+  </main>
+</div>
+
+<div class="modal hidden" id="helpModal"><div class="modal-card"><button class="modal-close" data-close="helpModal">×</button><p class="eyebrow">NAME FORMAT HELP</p><h2>Keep alternate names clear</h2><div id="helpExamples"></div><div class="callout"><b>Approved characters</b><p>All Latin-script Unicode letters, spaces, digits, apostrophes, quotation marks, hyphens, periods, commas, parentheses, ampersands and slashes. Non-Latin scripts are flagged and must be changed before continuing.</p></div></div></div>
+
+<div class="modal hidden" id="customModal">
+  <div class="modal-card">
+    <button class="modal-close" data-close="customModal">×</button>
+    <p class="eyebrow" id="customTitle">Add specially formatted executives</p>
+    <div id="customFields">
+      <div class="field-row">
+        <label>Prefix<input id="fPrefix" placeholder="Dr."></label>
+        <label>First name<input id="fFirst" placeholder="Johnathan"></label>
+        <label>Nickname<input id="fNick" placeholder="John"></label>
+        <label>Middle<input id="fMiddle"></label>
+      </div>
+      <div class="field-row">
+        <label>Surname<input id="fSurname" placeholder="Doe"></label>
+        <label>Former surname<input id="fFormer" placeholder="Smith"></label>
+        <label>Suffix<input id="fSuffix" placeholder="Jr."></label>
+      </div>
+    </div>
+    <label class="checkbox-row"><input type="checkbox" id="mononymous"> This executive uses a single (mononymous) name</label>
+    <div id="monoWrap" class="hidden field-row"><label>Name<input id="fMono"></label></div>
+    <p class="muted">Preview: <code id="customPreview">[]</code> · <a href="#" id="approvedInfo">approved characters</a></p>
+    <div id="customAdded"></div>
+    <div class="button-row">
+      <button class="secondary" id="clearCustom">Clear</button>
+      <button class="secondary" id="addCustom">Add to list</button>
+      <button class="primary" id="finishCustom">Done</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal hidden" id="charsModal">
+  <div class="modal-card">
+    <button class="modal-close" data-close="charsModal">×</button>
+    <p class="eyebrow">APPROVED CHARACTERS</p>
+    <p>All Latin-script Unicode letters, spaces, digits, apostrophes, quotation marks, hyphens, periods, commas, parentheses, ampersands and slashes. Non-Latin scripts are flagged and must be changed before continuing.</p>
+  </div>
+</div>
+
+<div class="context-menu hidden" id="nameMenu" style="position:fixed;z-index:1000;">
+  <button id="replaceCustom">Replace with formatted name…</button>
+</div>
+
+<script src="/static/app.js"></script>
+</body>
+</html>
